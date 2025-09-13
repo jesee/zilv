@@ -88,11 +88,13 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
 
   void _showBehaviorDialog({Behavior? behavior}) {
     final nameController = TextEditingController(text: behavior?.name ?? '');
-
+    bool isPositive = (behavior?.points ?? 1) >= 0;
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
           title: Text(behavior == null ? 'Add Behavior' : 'Edit Behavior'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -100,6 +102,36 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: const [
+                  Text('Type'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: const Text('Positive'),
+                    selected: isPositive,
+                    onSelected: (_) {
+                      setState(() {
+                        isPositive = true;
+                      });
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('Negative'),
+                    selected: !isPositive,
+                    onSelected: (_) {
+                      setState(() {
+                        isPositive = false;
+                      });
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -117,15 +149,18 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
                 );
 
                 if (behavior == null) {
+                  final newPoints = isPositive ? 1 : -1;
                   await behaviorService.addBehavior(
-                    Behavior(id: 0, name: name, points: 1),
+                    Behavior(id: 0, name: name, points: newPoints),
                   );
                 } else {
+                  final magnitude = behavior.points.abs();
+                  final updatedPoints = isPositive ? magnitude : -magnitude;
                   await behaviorService.updateBehavior(
                     Behavior(
                       id: behavior.id,
                       name: name,
-                      points: behavior.points,
+                      points: updatedPoints,
                     ),
                   );
                 }
@@ -135,6 +170,8 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
               child: const Text('Save'),
             ),
           ],
+            );
+          },
         );
       },
     );
