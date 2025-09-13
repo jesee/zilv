@@ -40,6 +40,19 @@ class MyApp extends StatelessWidget {
           ),
           listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4)),
         ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal, brightness: Brightness.dark),
+          snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+          appBarTheme: const AppBarTheme(centerTitle: false),
+          cardTheme: const CardTheme(
+            elevation: 2,
+            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          ),
+          listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4)),
+        ),
+        themeMode: ThemeMode.system,
+        debugShowCheckedModeBanner: false,
         home: const HomeScreen(),
       ),
     );
