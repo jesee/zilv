@@ -156,30 +156,42 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
             ),
             TextButton(
               onPressed: () async {
-                final name = nameController.text;
+                final name = nameController.text.trim();
+                if (name.isEmpty) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    const SnackBar(content: Text('名称不能为空')),
+                  );
+                  return;
+                }
                 final behaviorService = Provider.of<BehaviorService>(
                   context,
                   listen: false,
                 );
 
-                if (behavior == null) {
-                  final newPoints = isPositive ? 1 : -1;
-                  await behaviorService.addBehavior(
-                    Behavior(id: 0, name: name, points: newPoints),
-                  );
-                } else {
-                  final magnitude = behavior.points.abs();
-                  final updatedPoints = isPositive ? magnitude : -magnitude;
-                  await behaviorService.updateBehavior(
-                    Behavior(
-                      id: behavior.id,
-                      name: name,
-                      points: updatedPoints,
-                    ),
+                try {
+                  if (behavior == null) {
+                    final newPoints = isPositive ? 1 : -1;
+                    await behaviorService.addBehavior(
+                      Behavior(id: 0, name: name, points: newPoints),
+                    );
+                  } else {
+                    final magnitude = behavior.points.abs();
+                    final updatedPoints = isPositive ? magnitude : -magnitude;
+                    await behaviorService.updateBehavior(
+                      Behavior(
+                        id: behavior.id,
+                        name: name,
+                        points: updatedPoints,
+                      ),
+                    );
+                  }
+                  _loadBehaviors();
+                  Navigator.of(context).pop();
+                } catch (_) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    const SnackBar(content: Text('保存失败，请重试')),
                   );
                 }
-                _loadBehaviors();
-                Navigator.of(context).pop();
               },
               child: const Text('Save'),
             ),

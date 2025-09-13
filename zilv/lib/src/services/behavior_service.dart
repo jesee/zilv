@@ -54,7 +54,7 @@ class BehaviorServiceImpl implements BehaviorService {
         id: maps[i]['id'],
         name: maps[i]['name'],
         points: maps[i]['points'],
-        category: maps[i]['category'],
+        category: (maps[i]['category'] as String?) ?? 'General',
       );
     });
   }
