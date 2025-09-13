@@ -111,8 +111,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: Text(behavior.name),
                       trailing: Text('${behavior.points}'),
                       onTap: () async {
-                        await behaviorService.logBehavior(behavior);
-                        _loadData(); // Refresh data
+                        try {
+                          await behaviorService.logBehavior(behavior);
+                        } catch (e) {
+                          final message = e
+                                  .toString()
+                                  .contains('DAILY_POSITIVE_LIMIT_REACHED')
+                              ? '今日正面积分已达上限'
+                              : '记录失败';
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(message)),
+                            );
+                          }
+                        } finally {
+                          _loadData(); // Refresh data
+                        }
                       },
                     );
                   },
