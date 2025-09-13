@@ -49,21 +49,35 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
             itemCount: behaviors.length,
             itemBuilder: (context, index) {
               final behavior = behaviors[index];
-              return ListTile(
-                title: Text(behavior.name),
-                subtitle: Text('Points: ${behavior.points}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _showBehaviorDialog(behavior: behavior),
+              final isPositive = behavior.points >= 0;
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: isPositive
+                        ? Theme.of(context).colorScheme.tertiaryContainer
+                        : Theme.of(context).colorScheme.errorContainer,
+                    child: Icon(
+                      isPositive ? Icons.thumb_up_alt : Icons.thumb_down_alt,
+                      color: isPositive
+                          ? Theme.of(context).colorScheme.onTertiaryContainer
+                          : Theme.of(context).colorScheme.onErrorContainer,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _deleteBehavior(behavior.id),
-                    ),
-                  ],
+                  ),
+                  title: Text(behavior.name),
+                  subtitle: Text('Points: ${behavior.points}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _showBehaviorDialog(behavior: behavior),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteBehavior(behavior.id),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -88,14 +102,13 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
 
   void _showBehaviorDialog({Behavior? behavior}) {
     final nameController = TextEditingController(text: behavior?.name ?? '');
-    final pointsController = TextEditingController(
-      text: behavior?.points.toString() ?? '',
-    );
-
+    bool isPositive = (behavior?.points ?? 1) >= 0;
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
           title: Text(behavior == null ? 'Add Behavior' : 'Edit Behavior'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -104,10 +117,35 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
               ),
-              TextField(
-                controller: pointsController,
-                decoration: const InputDecoration(labelText: 'Points'),
-                keyboardType: TextInputType.number,
+              const SizedBox(height: 12),
+              Row(
+                children: const [
+                  Text('Type'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: const Text('Positive'),
+                    selected: isPositive,
+                    onSelected: (_) {
+                      setState(() {
+                        isPositive = true;
+                      });
+                    },
+                  ),
+                  ChoiceChip(
+                    label: const Text('Negative'),
+                    selected: !isPositive,
+                    onSelected: (_) {
+                      setState(() {
+                        isPositive = false;
+                      });
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -119,19 +157,25 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
             TextButton(
               onPressed: () async {
                 final name = nameController.text;
-                final points = int.tryParse(pointsController.text) ?? 0;
                 final behaviorService = Provider.of<BehaviorService>(
                   context,
                   listen: false,
                 );
 
                 if (behavior == null) {
+                  final newPoints = isPositive ? 1 : -1;
                   await behaviorService.addBehavior(
-                    Behavior(id: 0, name: name, points: points),
+                    Behavior(id: 0, name: name, points: newPoints),
                   );
                 } else {
+                  final magnitude = behavior.points.abs();
+                  final updatedPoints = isPositive ? magnitude : -magnitude;
                   await behaviorService.updateBehavior(
-                    Behavior(id: behavior.id, name: name, points: points),
+                    Behavior(
+                      id: behavior.id,
+                      name: name,
+                      points: updatedPoints,
+                    ),
                   );
                 }
                 _loadBehaviors();
@@ -140,6 +184,8 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
               child: const Text('Save'),
             ),
           ],
+            );
+          },
         );
       },
     );

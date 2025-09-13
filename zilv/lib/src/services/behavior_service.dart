@@ -88,10 +88,28 @@ class BehaviorServiceImpl implements BehaviorService {
   @override
   Future<void> logBehavior(Behavior behavior) async {
     final db = await _dbHelper.database;
+    int pointsToInsert = behavior.points;
+
+    if (behavior.points > 0) {
+      final List<Map<String, Object?>> result = await db.rawQuery(
+        "SELECT COALESCE(SUM(points), 0) as total FROM log_entries WHERE date(timestamp) = date('now') AND points > 0",
+      );
+      final int dailyPositive = (result.first['total'] as int?) ?? 0;
+      final int remaining = 2 - dailyPositive;
+
+      if (remaining <= 0) {
+        throw Exception('DAILY_POSITIVE_LIMIT_REACHED');
+      }
+
+      if (pointsToInsert > remaining) {
+        pointsToInsert = remaining;
+      }
+    }
+
     final logEntry = LogEntry(
       behaviorId: behavior.id,
       timestamp: DateTime.now(),
-      points: behavior.points,
+      points: pointsToInsert,
     );
     await db.insert('log_entries', logEntry.toMap());
   }
