@@ -29,7 +29,17 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Zilv Self-Discipline',
-        theme: ThemeData(primarySwatch: Colors.blue),
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+          snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+          appBarTheme: const AppBarTheme(centerTitle: false),
+          cardTheme: const CardTheme(
+            elevation: 2,
+            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          ),
+          listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4)),
+        ),
         home: const HomeScreen(),
       ),
     );

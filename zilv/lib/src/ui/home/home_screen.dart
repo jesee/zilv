@@ -68,17 +68,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   } else if (snapshot.hasError) {
                     return const Text('Error');
                   }
-                  return Column(
+                  final score = snapshot.data ?? 0;
+                  final theme = Theme.of(context);
+                  return Row(
                     children: [
-                      const Text(
-                        'Current Score',
-                        style: TextStyle(fontSize: 20),
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        child: Icon(
+                          Icons.star_rounded,
+                          size: 36,
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
                       ),
-                      Text(
-                        '${snapshot.data ?? 0}',
-                        style: const TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Current Score',
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            Text(
+                              '$score',
+                              style: theme.textTheme.displaySmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -107,27 +125,52 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: behaviors.length,
                   itemBuilder: (context, index) {
                     final behavior = behaviors[index];
-                    return ListTile(
-                      title: Text(behavior.name),
-                      trailing: Text('${behavior.points}'),
-                      onTap: () async {
-                        try {
-                          await behaviorService.logBehavior(behavior);
-                        } catch (e) {
-                          final message = e
-                                  .toString()
-                                  .contains('DAILY_POSITIVE_LIMIT_REACHED')
-                              ? '今日正面积分已达上限'
-                              : '记录失败';
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(message)),
-                            );
+                    final isPositive = behavior.points >= 0;
+                    return Card(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: isPositive
+                              ? Theme.of(context).colorScheme.tertiaryContainer
+                              : Theme.of(context).colorScheme.errorContainer,
+                          child: Icon(
+                            isPositive ? Icons.thumb_up_alt : Icons.thumb_down_alt,
+                            color: isPositive
+                                ? Theme.of(context).colorScheme.onTertiaryContainer
+                                : Theme.of(context).colorScheme.onErrorContainer,
+                          ),
+                        ),
+                        title: Text(behavior.name),
+                        trailing: Chip(
+                          label: Text('${behavior.points}'),
+                          backgroundColor: isPositive
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context).colorScheme.errorContainer,
+                          labelStyle: TextStyle(
+                            color: isPositive
+                                ? Theme.of(context).colorScheme.onPrimaryContainer
+                                : Theme.of(context).colorScheme.onErrorContainer,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onTap: () async {
+                          try {
+                            await behaviorService.logBehavior(behavior);
+                          } catch (e) {
+                            final message = e
+                                    .toString()
+                                    .contains('DAILY_POSITIVE_LIMIT_REACHED')
+                                ? '今日正面积分已达上限'
+                                : '记录失败';
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(message)),
+                              );
+                            }
+                          } finally {
+                            _loadData(); // Refresh data
                           }
-                        } finally {
-                          _loadData(); // Refresh data
-                        }
-                      },
+                        },
+                      ),
                     );
                   },
                 );

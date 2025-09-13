@@ -49,21 +49,35 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
             itemCount: behaviors.length,
             itemBuilder: (context, index) {
               final behavior = behaviors[index];
-              return ListTile(
-                title: Text(behavior.name),
-                subtitle: Text('Points: ${behavior.points}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _showBehaviorDialog(behavior: behavior),
+              final isPositive = behavior.points >= 0;
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: isPositive
+                        ? Theme.of(context).colorScheme.tertiaryContainer
+                        : Theme.of(context).colorScheme.errorContainer,
+                    child: Icon(
+                      isPositive ? Icons.thumb_up_alt : Icons.thumb_down_alt,
+                      color: isPositive
+                          ? Theme.of(context).colorScheme.onTertiaryContainer
+                          : Theme.of(context).colorScheme.onErrorContainer,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _deleteBehavior(behavior.id),
-                    ),
-                  ],
+                  ),
+                  title: Text(behavior.name),
+                  subtitle: Text('Points: ${behavior.points}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _showBehaviorDialog(behavior: behavior),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteBehavior(behavior.id),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
