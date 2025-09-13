@@ -88,9 +88,6 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
 
   void _showBehaviorDialog({Behavior? behavior}) {
     final nameController = TextEditingController(text: behavior?.name ?? '');
-    final pointsController = TextEditingController(
-      text: behavior?.points.toString() ?? '',
-    );
 
     showDialog(
       context: context,
@@ -104,11 +101,6 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
               ),
-              TextField(
-                controller: pointsController,
-                decoration: const InputDecoration(labelText: 'Points'),
-                keyboardType: TextInputType.number,
-              ),
             ],
           ),
           actions: [
@@ -119,7 +111,6 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
             TextButton(
               onPressed: () async {
                 final name = nameController.text;
-                final points = int.tryParse(pointsController.text) ?? 0;
                 final behaviorService = Provider.of<BehaviorService>(
                   context,
                   listen: false,
@@ -127,11 +118,15 @@ class _ManageBehaviorsScreenState extends State<ManageBehaviorsScreen> {
 
                 if (behavior == null) {
                   await behaviorService.addBehavior(
-                    Behavior(id: 0, name: name, points: points),
+                    Behavior(id: 0, name: name, points: 1),
                   );
                 } else {
                   await behaviorService.updateBehavior(
-                    Behavior(id: behavior.id, name: name, points: points),
+                    Behavior(
+                      id: behavior.id,
+                      name: name,
+                      points: behavior.points,
+                    ),
                   );
                 }
                 _loadBehaviors();

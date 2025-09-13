@@ -28,13 +28,12 @@ void main() {
       find.widgetWithText(TextField, 'Name'),
       'Read a book',
     );
-    await tester.enterText(find.widgetWithText(TextField, 'Points'), '10');
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     // Verify the behavior is added
     expect(find.text('Read a book'), findsOneWidget);
-    expect(find.text('Points: 10'), findsOneWidget);
+    expect(find.text('Points: 1'), findsOneWidget);
 
     // Go back to home screen
     Navigator.of(tester.element(find.byType(Scaffold))).pop();
@@ -45,7 +44,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify score is updated
-    expect(find.text('10'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
 
     // Go back to manage behaviors and delete it
     await tester.tap(find.byIcon(Icons.edit));
